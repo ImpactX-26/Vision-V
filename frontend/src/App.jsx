@@ -202,6 +202,84 @@ function ReportEmergency() {
   const [locationLoading, setLocationLoading] = useState(false);
 
   const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
+  event.preventDefault();
+
+  const form = event.currentTarget;
+  const data = new FormData(form);
+
+  if (!location) {
+    alert("Please click 'Use My Location' before submitting.");
+    return;
+  }
+
+  const coordinates = location.split(",").map(Number);
+
+  if (
+    coordinates.length !== 2 ||
+    !Number.isFinite(coordinates[0]) ||
+    !Number.isFinite(coordinates[1]) ||
+    coordinates[0] < -90 ||
+    coordinates[0] > 90 ||
+    coordinates[1] < -180 ||
+    coordinates[1] > 180
+  ) {
+    alert("Invalid GPS coordinates. Please detect your location again.");
+    return;
+  }
+
+  const [lat, lng] = coordinates;
+
+  try {
+    const response = await fetch(
+      `${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}/api/reports`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: data.get("emergencyType"),
+          description: data.get("description"),
+          location,
+          lat,
+          lng,
+          category: data.get("emergencyType"),
+          severity: data.get("severity"),
+        }),
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        typeof result.detail === "string"
+          ? result.detail
+          : JSON.stringify(result.detail || result)
+      );
+    }
+
+    const reportId =
+      result.report?.id ??
+      result.report?.incident_id ??
+      result.report?.report_id ??
+      result.id ??
+      result.incident_id ??
+      result.report_id;
+
+    alert(
+      `Report submitted successfully!\nReport ID: ${
+        reportId ?? "Created successfully"
+      }\nStatus: ${result.report?.status ?? "Submitted"}`
+    );
+
+    form.reset();
+    setLocation("");
+  } catch (error) {
+    alert(`Submission failed: ${error.message}`);
+  }
+};
     event.preventDefault();
 
     const form = event.currentTarget;
