@@ -1,0 +1,6 @@
+backend/.env
+**/__pycache__/
+*.py[cod]
+backend/visionv.db
+backend/venv/
+backend/.venv/
