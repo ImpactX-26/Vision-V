@@ -27,7 +27,30 @@ app = FastAPI(
     description="Backend API for VisionV emergency coordination",
     version="1.0.0"
 )
+app = FastAPI(
+    title="VisionV Backend",
+    description="Backend API for VisionV emergency coordination",
+    version="1.0.0"
+)
 
+# Allow the React frontend to connect
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Register existing routes
+app.include_router(report_router)
+app.include_router(incident_router)
+app.include_router(team_router)
+app.include_router(ai_events_router)
+app.include_router(websocket_router)
 
 # Register routes
 app.include_router(report_router)
